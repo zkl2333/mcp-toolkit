@@ -1,0 +1,5 @@
+[test]
+coverage = true
+coverageDir = "coverage"
+coverageReporter = ["lcov", "text"]
+coveragePathIgnorePatterns = ["tests/**/*", "dist/**/*", "node_modules/**/*"]

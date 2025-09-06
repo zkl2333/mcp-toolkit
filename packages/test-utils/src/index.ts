@@ -6,3 +6,7 @@
 
 // 导出测试设置工具
 export * from './test-setup';
+
+// 导出新的 MCP SDK 模拟工具（替代旧的 mcp-test-utils）
+export * from './mock-mcp-sdk';
+export * from './setup-mcp-mocks';

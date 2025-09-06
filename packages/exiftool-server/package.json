@@ -18,7 +18,7 @@
     "dev": "bun run src/index.ts",
     "start": "node dist/index.js",
     "test": "bun run build && NODE_ENV=test bun test tests/*.spec.ts --timeout 30000",
-    "test:coverage": "bun run build && NODE_ENV=test bun test tests/*.spec.ts --coverage --coverage-reporter=lcov --timeout 30000",
+    "test:coverage": "bun run build && NODE_ENV=test bun test tests/*.spec.ts --coverage --timeout 30000",
     "test:watch": "NODE_ENV=test bun test tests/*.spec.ts --watch --timeout 30000",
     "test:setup": "node tests/create-test-image.js",
     "clean": "rm -rf dist",

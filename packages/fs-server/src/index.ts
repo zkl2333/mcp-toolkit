@@ -13,7 +13,7 @@ import { stat } from 'node:fs/promises';
  */
 
 // 创建 MCP 服务器实例
-const server = new McpServer({
+export const server = new McpServer({
   name: "filesystem-server",
   version: "0.1.0"
 });

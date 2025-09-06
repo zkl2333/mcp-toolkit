@@ -1,0 +1,6 @@
+[test]
+coverage = true
+coverageDir = "coverage"
+coverageReporter = ["lcov"]
+coveragePathIgnorePatterns = ["tests/**/*", "dist/**/*", "node_modules/**/*"]
+preload = ["./tests/setup-mocks.ts"]
