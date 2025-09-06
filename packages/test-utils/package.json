@@ -1,0 +1,40 @@
+{
+  "name": "@mcp/test-utils",
+  "version": "0.1.0",
+  "description": "MCP 测试工具包：为 MCP 服务器提供通用测试功能",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "bun run build:server && bun run build:types",
+    "build:server": "bun build src/index.ts --outfile=dist/index.js --format=cjs --target=node --external=@modelcontextprotocol/sdk",
+    "build:types": "tsc --declaration --emitDeclarationOnly --outDir dist",
+    "clean": "rm -rf dist",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": [
+    "mcp",
+    "testing",
+    "test-utils",
+    "mcp-server",
+    "typescript"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/bun": "latest",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

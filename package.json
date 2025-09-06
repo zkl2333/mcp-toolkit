@@ -1,0 +1,35 @@
+{
+  "name": "mcp-toolkit",
+  "private": true,
+  "version": "0.0.0",
+  "description": "一个包含多个MCP工具的monorepo项目",
+  "license": "MIT",
+  "workspaces": [
+    "packages/*"
+  ],
+  "packageManager": "bun@latest",
+  "scripts": {
+    "build": "bun run build:packages",
+    "build:packages": "bun --filter='./packages/*' run build",
+    "test": "bun --filter='*' run test",
+    "test:coverage": "bun --filter='*' run test:coverage",
+    "dev": "bun --filter='*' run dev",
+    "clean": "bun --filter='*' run clean && rm -rf node_modules .turbo",
+    "lint": "bun --filter='*' run lint",
+    "type-check": "bun --filter='*' run type-check",
+    "changeset": "changeset",
+    "changeset:version": "changeset version",
+    "changeset:publish": "changeset publish",
+    "changeset:status": "changeset status"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.1",
+    "@types/bun": "latest",
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18",
+    "bun": ">=1.0.0"
+  }
+}

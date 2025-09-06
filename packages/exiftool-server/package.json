@@ -1,0 +1,55 @@
+{
+  "name": "@mcp/exiftool-server",
+  "version": "0.1.0",
+  "description": "MCP ExifTool服务器：提供图片/视频元数据读取和编辑工具",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "mcp-exiftool-server": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "bun run build:server && bun run build:types",
+    "build:server": "bun build src/index.ts --outfile=dist/index.js --format=cjs --target=node --external=@modelcontextprotocol/sdk --external=exiftool-vendored",
+    "build:types": "tsc --declaration --emitDeclarationOnly --outDir dist",
+    "dev": "bun run src/index.ts",
+    "start": "node dist/index.js",
+    "test": "bun run build && NODE_ENV=test bun test --timeout 30000",
+    "test:coverage": "bun run build && NODE_ENV=test bun test --coverage --coverage-reporter=lcov --timeout 30000",
+    "test:watch": "NODE_ENV=test bun test --watch --timeout 30000",
+    "test:setup": "node tests/create-test-image.js",
+    "clean": "rm -rf dist",
+    "lint": "echo '暂无linting配置'",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": [
+    "mcp",
+    "exiftool",
+    "mcp-server",
+    "metadata",
+    "exif",
+    "image-processing",
+    "typescript"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "exiftool-vendored": "^25.0.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/bun": "latest",
+    "@mcp/test-utils": "workspace:*",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
