@@ -4,7 +4,7 @@
  */
 
 import { mock } from "bun:test";
-import { createMockMcpSdk } from "./mock-mcp-sdk.js";
+import { createMockMcpSdk, MockMcpServer } from "./mock-mcp-sdk.js";
 
 /**
  * 设置 MCP SDK 模拟
@@ -28,7 +28,7 @@ export function setupMcpMocks() {
 /**
  * 创建测试助手，用于与模拟的服务器交互
  */
-export function createMcpTestHelper(server: any) {
+export function createMcpTestHelper(server: MockMcpServer) {
   // 现在 server 是我们的 MockMcpServer 实例
   // 我们可以直接调用它的方法，而不需要访问内部属性
   

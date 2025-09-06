@@ -13,7 +13,13 @@ dist/
 .env.local
 
 # IDE and editors
+
+# VSCode  
 .vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/extensions.json
+
 .idea/
 
 # OS generated files

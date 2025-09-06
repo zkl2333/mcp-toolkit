@@ -12,6 +12,9 @@
     "build": "bun run build:server && bun run build:types",
     "build:server": "bun build src/index.ts --outfile=dist/index.js --format=cjs --target=node --external=@modelcontextprotocol/sdk",
     "build:types": "tsc --declaration --emitDeclarationOnly --outDir dist",
+    "test": "bun run build && NODE_ENV=test bun test tests/*.spec.ts --timeout 30000; bun run fix-coverage",
+    "test:watch": "NODE_ENV=test bun test tests/*.spec.ts --watch --timeout 30000",
+    "fix-coverage": "node ../../scripts/fix-coverage-paths.js test-utils",
     "clean": "rm -rf dist",
     "type-check": "tsc --noEmit"
   },

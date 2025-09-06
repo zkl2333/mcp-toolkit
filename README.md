@@ -25,8 +25,6 @@ mcp-toolkit/
 
 ## 已包含的 MCP 服务器
 
-> 💡 **徽章设置**: 首次使用需要配置 Codecov - [查看设置指南](./CODECOV_SETUP.md)
-
 ### 🗂️ @mcp/fs-server
 文件系统操作服务器 - [详细信息](./packages/fs-server/README.md)
 
@@ -37,6 +35,12 @@ mcp-toolkit/
 图片/视频元数据操作服务器 - [详细信息](./packages/exiftool-server/README.md)
 
 [![codecov](https://codecov.io/gh/zkl2333/mcp-toolkit/graph/badge.svg?flag=exiftool-server)](https://codecov.io/gh/zkl2333/mcp-toolkit)
+[![CI](https://github.com/zkl2333/mcp-toolkit/workflows/Test%20%26%20Coverage/badge.svg)](https://github.com/zkl2333/mcp-toolkit/actions)
+
+### 🧪 @mcp/test-utils
+测试工具包 - [详细信息](./packages/test-utils/README.md)
+
+[![codecov](https://codecov.io/gh/zkl2333/mcp-toolkit/graph/badge.svg?flag=test-utils)](https://codecov.io/gh/zkl2333/mcp-toolkit)
 [![CI](https://github.com/zkl2333/mcp-toolkit/workflows/Test%20%26%20Coverage/badge.svg)](https://github.com/zkl2333/mcp-toolkit/actions)
 
 ## 快速开始

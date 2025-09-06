@@ -12,7 +12,6 @@
     "build": "bun run build:packages",
     "build:packages": "bun --filter='./packages/*' run build",
     "test": "bun --filter='*' run test",
-    "test:coverage": "bun --filter='*' run test:coverage",
     "dev": "bun --filter='*' run dev",
     "clean": "bun --filter='*' run clean && rm -rf node_modules .turbo",
     "lint": "bun --filter='*' run lint",
