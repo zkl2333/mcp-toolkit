@@ -229,8 +229,8 @@ mcp-exiftool-server
 
 项目包含完整的自动化测试套件，测试所有 MCP 工具功能。
 
-[![codecov](https://codecov.io/gh/YOUR_GITHUB_USERNAME/mcp-toolkit/graph/badge.svg?flag=exiftool-server)](https://codecov.io/gh/YOUR_GITHUB_USERNAME/mcp-toolkit)
-[![CI](https://github.com/YOUR_GITHUB_USERNAME/mcp-toolkit/workflows/Test%20%26%20Coverage/badge.svg)](https://github.com/YOUR_GITHUB_USERNAME/mcp-toolkit/actions)
+[![codecov](https://codecov.io/gh/zkl2333/mcp-toolkit/graph/badge.svg?flag=exiftool-server)](https://codecov.io/gh/zkl2333/mcp-toolkit)
+[![CI](https://github.com/zkl2333/mcp-toolkit/workflows/Test%20%26%20Coverage/badge.svg)](https://github.com/zkl2333/mcp-toolkit/actions)
 
 ### 运行测试
 
