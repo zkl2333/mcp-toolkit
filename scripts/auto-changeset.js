@@ -112,9 +112,23 @@ function getAffectedPackages(files, packageNames) {
         
         // 查找对应的包名
         for (const pkgName of packageNames) {
-          // 从包名中提取目录名 (例如: @zkl2333/fs-mcp-server -> fs-server)
+          // 从包名中提取目录名
           const packageDirName = pkgName.split("/").pop();
-          if (packageDirName === packageDir) {
+          
+          // 处理新的包名格式：@zkl2333/fs-mcp-server -> fs-server
+          // 或者 @zkl2333/exiftool-mcp-server -> exiftool-server
+          // 或者 @zkl2333/mcp-test-utils -> test-utils
+          let expectedDirName = packageDirName;
+          
+          if (packageDirName.endsWith('-mcp-server')) {
+            // 移除 -mcp-server 后缀
+            expectedDirName = packageDirName.replace('-mcp-server', '-server');
+          } else if (packageDirName.startsWith('mcp-') && packageDirName.endsWith('-utils')) {
+            // 处理 mcp-test-utils -> test-utils
+            expectedDirName = packageDirName.replace('mcp-', '');
+          }
+          
+          if (expectedDirName === packageDir) {
             affectedPackages.add(pkgName);
             break;
           }

@@ -1,4 +1,4 @@
-# @zkl2333/exiftool-mcp-server
+# @zkl2333/mcp-test-utils
 
 ## 0.2.0
 

@@ -1,6 +1,6 @@
 {
   "name": "@zkl2333/exiftool-mcp-server",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "MCP ExifTool服务器：提供图片/视频元数据读取和编辑工具",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
