@@ -45,7 +45,15 @@
 - **图片格式**: JPEG, TIFF, PNG, GIF, BMP, WebP, HEIC, AVIF 等
 - **RAW 格式**: CR2, NEF, ARW, DNG, ORF, RAF, PEF, RW2 等
 - **视频格式**: MP4, MOV, AVI, MKV, WEBM 等
-- **其他格式**: PDF, PostScript, 多种音频格式等
+- **可执行文件/程序资源 (PE)**: EXE, DLL, SYS 等（版本、公司名、产品名、描述、原始文件名等）
+- **文档/档案/音频**: PDF, PostScript, ZIP, MP3, FLAC 等
+
+## 典型使用场景
+
+- **电商/内容平台**：读取并规范商品图片元数据（相机信息、拍摄时间、版权、关键词），辅助 SEO、检索与合规。
+- **数字资产管理（DAM）**：批量读取/写入版权与标签，构建可检索、可审计的媒体库。
+- **安全与合规/取证**：读取 EXE/DLL 的版本与厂商信息（CompanyName、ProductName、FileVersion 等），辅助来源甄别与资产盘点。
+- **摄影工作流**：统一整理 EXIF/XMP/IPTC 标签，批量修正 AllDates，提取缩略图/预览图用于快速浏览。
 
 ## 安装和使用
 
@@ -158,6 +166,64 @@ node dist/index.js
   }
 }
 ```
+
+**读取 EXE/DLL 信息：**
+
+```json
+{
+  "name": "read-metadata",
+  "arguments": {
+    "filePath": "C:/Path/To/App.exe",
+    "tags": [
+      "FileVersion",
+      "ProductName",
+      "CompanyName",
+      "FileDescription",
+      "OriginalFilename",
+      "FileType",
+      "MIMEType"
+    ]
+  }
+}
+```
+
+## 提示词模板（Prompts）
+
+- **电商商品图片元数据诊断与优化**
+  - 目标：读取图片关键信息，产出标题/Alt 文本/关键词建议。
+  - 模板：
+    ```
+    使用 MCP 的 exiftool 服务器：
+    1) 调用 read-metadata 读取 /path/to/image.jpg 的以下标签：
+       [Make, Model, LensModel, DateTimeOriginal, GPSLatitude, GPSLongitude, Keywords, Title, Description, Copyright]
+    2) 输出：
+       - 简要拍摄信息（相机/镜头/时间/地点）
+       - 建议的 SEO 标题（<= 60 字）
+       - 建议的 Alt 文本（<= 125 字）
+       - 建议的 5-10 个关键词
+    ```
+
+- **可执行文件来源核验（EXE/DLL）**
+  - 目标：核对版本与厂商信息，辅助资产盘点与来源甄别。
+  - 模板：
+    ```
+    使用 MCP 的 exiftool 服务器读取 C:/Path/To/App.exe 的版本信息：
+    调用 read-metadata，tags: [FileVersion, ProductName, CompanyName, FileDescription, OriginalFilename, FileType]
+    请输出：
+    - 产品名/公司名/版本
+    - 文件描述与原始文件名
+    - 基于信息给出可信度评估（低/中/高）
+    ```
+
+- **批量合规清理（去除敏感元数据）**
+  - 目标：检测并清理隐私字段（如 GPS、作者/版权等）。
+  - 模板：
+    ```
+    对目录 /assets/export 下所有图片：
+    1) 逐个调用 read-metadata 检查 GPS、Author、Copyright、UserComment。
+    2) 列出需清理的文件与字段。
+    3) 生成 delete-metadata / write-metadata 的建议操作列表（勿直接执行）。
+    ```
 
 ## 常用元数据标签
 
