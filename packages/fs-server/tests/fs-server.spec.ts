@@ -3,13 +3,53 @@ import { join } from 'path';
 import { 
   createTempTestDir, 
   cleanupTempDir, 
-  createTestFile,
-  createMcpTestHelper,
-  expectToolCall
+  createTestFile
 } from '@mcp/test-utils';
+import { MockMcpServer } from '@mcp/test-utils';
 
 // 导入 MCP 服务器（现在使用模拟的 SDK）
 import { server } from '../src/index.js';
+
+// 测试助手函数
+function createMcpTestHelper(server: MockMcpServer) {
+  return {
+    async callTool(toolName: string, args: Record<string, any> = {}) {
+      return await server.callTool(toolName, args);
+    },
+    getRegisteredTools(): string[] {
+      return server.getRegisteredTools();
+    },
+    isToolRegistered(toolName: string): boolean {
+      return server.isToolRegistered(toolName);
+    },
+    getToolConfig(toolName: string) {
+      return server.getToolConfig(toolName);
+    },
+    getServerInfo() {
+      return server.getServerInfo();
+    }
+  };
+}
+
+// 期望匹配器
+const expectToolCall = {
+  toSucceed(result: any) {
+    if (result.isError) {
+      throw new Error(`Expected tool call to succeed, but it failed with: ${result.content[0]?.text}`);
+    }
+  },
+  toFail(result: any) {
+    if (!result.isError) {
+      throw new Error(`Expected tool call to fail, but it succeeded with: ${result.content[0]?.text}`);
+    }
+  },
+  toContain(result: any, text: string) {
+    const content = result.content[0]?.text || '';
+    if (!content.includes(text)) {
+      throw new Error(`Expected tool call result to contain "${text}", but got: ${content}`);
+    }
+  }
+};
 
 describe("FS Server Tests", () => {
   let tempTestDir: string;
@@ -17,7 +57,7 @@ describe("FS Server Tests", () => {
 
   beforeEach(async () => {
     tempTestDir = await createTempTestDir('fs-server-test-');
-    mcpHelper = createMcpTestHelper(server);
+    mcpHelper = createMcpTestHelper(server as unknown as MockMcpServer);
   });
 
   afterEach(async () => {
@@ -28,16 +68,40 @@ describe("FS Server Tests", () => {
     test("应该注册所有预期的工具", () => {
       const tools = mcpHelper.getRegisteredTools();
       
+      // 基础文件操作
       expect(tools).toContain('move-file');
       expect(tools).toContain('copy-file');
       expect(tools).toContain('delete-file');
+      expect(tools).toContain('rename');
+      
+      // 目录操作
       expect(tools).toContain('list-directory');
       expect(tools).toContain('create-directory');
+      
+      // 文件信息
       expect(tools).toContain('file-info');
+      
+      // 链接操作
+      expect(tools).toContain('create-hard-link');
+      expect(tools).toContain('create-symlink');
+      expect(tools).toContain('read-symlink');
+      
+      // 权限管理
+      expect(tools).toContain('change-permissions');
+      
+      // 批量操作
+      expect(tools).toContain('batch-move');
+      expect(tools).toContain('batch-copy');
+      expect(tools).toContain('batch-delete');
     });
 
     test("所有工具应该是启用状态", () => {
-      const tools = ['move-file', 'copy-file', 'delete-file', 'list-directory', 'create-directory', 'file-info'];
+      const tools = [
+        'move-file', 'copy-file', 'delete-file', 'rename',
+        'list-directory', 'create-directory', 'file-info',
+        'create-hard-link', 'create-symlink', 'read-symlink',
+        'change-permissions', 'batch-move', 'batch-copy', 'batch-delete'
+      ];
       
       for (const toolName of tools) {
         expect(mcpHelper.isToolRegistered(toolName)).toBe(true);
@@ -293,6 +357,267 @@ describe("FS Server Tests", () => {
       
       expectToolCall.toSucceed(result);
       expectToolCall.toContain(result, '目录为空');
+    });
+  });
+
+  describe("高级文件操作测试", () => {
+    describe("重命名功能", () => {
+      test("rename 工具 - 应该能重命名文件", async () => {
+        const originalFile = await createTestFile(tempTestDir, 'original.txt', 'test content');
+        const newFile = join(tempTestDir, 'renamed.txt');
+        
+        const result = await mcpHelper.callTool("rename", {
+          oldPath: originalFile,
+          newPath: newFile,
+          overwrite: false,
+          createDirs: true
+        });
+        
+        expectToolCall.toSucceed(result);
+        expectToolCall.toContain(result, '重命名成功');
+        
+        // 验证文件已重命名
+        expect(await Bun.file(originalFile).exists()).toBe(false);
+        expect(await Bun.file(newFile).text()).toBe('test content');
+      });
+
+      test("rename 工具 - 应该能重命名目录", async () => {
+        const { promises: fs } = require('fs');
+        const originalDir = join(tempTestDir, 'original-dir');
+        const newDir = join(tempTestDir, 'renamed-dir');
+        await fs.mkdir(originalDir);
+        
+        const result = await mcpHelper.callTool("rename", {
+          oldPath: originalDir,
+          newPath: newDir,
+          overwrite: false,
+          createDirs: true
+        });
+        
+        expectToolCall.toSucceed(result);
+        expectToolCall.toContain(result, '重命名成功');
+        
+        // 验证目录已重命名
+        const stats = await fs.stat(newDir);
+        expect(stats.isDirectory()).toBe(true);
+      });
+    });
+
+    describe("硬链接功能", () => {
+      test("create-hard-link 工具 - 应该能创建硬链接", async () => {
+        const originalFile = await createTestFile(tempTestDir, 'original.txt', 'test content');
+        const hardLinkFile = join(tempTestDir, 'hardlink.txt');
+        
+        const result = await mcpHelper.callTool("create-hard-link", {
+          source: originalFile,
+          destination: hardLinkFile,
+          overwrite: false,
+          createDirs: true
+        });
+        
+        expectToolCall.toSucceed(result);
+        expectToolCall.toContain(result, '硬链接创建成功');
+        
+        // 验证硬链接已创建
+        expect(await Bun.file(hardLinkFile).text()).toBe('test content');
+      });
+
+      test("create-hard-link 工具 - 应该拒绝为目录创建硬链接", async () => {
+        const { promises: fs } = require('fs');
+        const originalDir = join(tempTestDir, 'original-dir');
+        const hardLinkFile = join(tempTestDir, 'hardlink.txt');
+        await fs.mkdir(originalDir);
+        
+        const result = await mcpHelper.callTool("create-hard-link", {
+          source: originalDir,
+          destination: hardLinkFile,
+          overwrite: false,
+          createDirs: true
+        });
+        
+        expectToolCall.toFail(result);
+        expectToolCall.toContain(result, '硬链接不能链接到目录');
+      });
+    });
+
+    describe("软链接功能", () => {
+      test("create-symlink 工具 - 应该能创建软链接", async () => {
+        const targetFile = await createTestFile(tempTestDir, 'target.txt', 'target content');
+        const symlinkFile = join(tempTestDir, 'symlink.txt');
+        
+        const result = await mcpHelper.callTool("create-symlink", {
+          target: targetFile,
+          linkPath: symlinkFile,
+          overwrite: false,
+          createDirs: true
+        });
+        
+        // 在 Windows 上，软链接可能需要特殊权限
+        if (result.isError && result.content[0]?.text.includes('Windows 上创建符号链接需要特殊权限')) {
+          // 这是预期的 Windows 权限问题，跳过测试
+          console.log('跳过软链接测试：需要 Windows 管理员权限或开发者模式');
+          return;
+        }
+        
+        expectToolCall.toSucceed(result);
+        expectToolCall.toContain(result, '软链接创建成功');
+      });
+
+      test("read-symlink 工具 - 应该能读取软链接", async () => {
+        const { promises: fs } = require('fs');
+        const targetFile = await createTestFile(tempTestDir, 'target.txt', 'target content');
+        const symlinkFile = join(tempTestDir, 'symlink.txt');
+        
+        try {
+          // 先创建软链接
+          await fs.symlink(targetFile, symlinkFile);
+        } catch (error: any) {
+          if (error.code === 'EPERM' || error.code === 'EACCES') {
+            // 在 Windows 上权限不足，跳过测试
+            console.log('跳过软链接读取测试：需要 Windows 管理员权限或开发者模式');
+            return;
+          }
+          throw error;
+        }
+        
+        const result = await mcpHelper.callTool("read-symlink", {
+          linkPath: symlinkFile
+        });
+        
+        expectToolCall.toSucceed(result);
+        expectToolCall.toContain(result, '软链接信息');
+        expectToolCall.toContain(result, targetFile);
+      });
+
+      test("read-symlink 工具 - 应该正确处理非软链接文件", async () => {
+        const regularFile = await createTestFile(tempTestDir, 'regular.txt', 'regular content');
+        
+        const result = await mcpHelper.callTool("read-symlink", {
+          linkPath: regularFile
+        });
+        
+        expectToolCall.toFail(result);
+        expectToolCall.toContain(result, '不是软链接');
+      });
+    });
+
+    describe("权限管理功能", () => {
+      test("change-permissions 工具 - 应该能修改文件权限", async () => {
+        const testFile = await createTestFile(tempTestDir, 'permission-test.txt', 'test content');
+        
+        const result = await mcpHelper.callTool("change-permissions", {
+          path: testFile,
+          mode: '644'
+        });
+        
+        expectToolCall.toSucceed(result);
+        expectToolCall.toContain(result, '权限修改成功');
+      });
+
+      test("change-permissions 工具 - 应该拒绝无效的权限模式", async () => {
+        const testFile = await createTestFile(tempTestDir, 'permission-test.txt', 'test content');
+        
+        const result = await mcpHelper.callTool("change-permissions", {
+          path: testFile,
+          mode: '999'
+        });
+        
+        expectToolCall.toFail(result);
+        expectToolCall.toContain(result, '无效的权限模式');
+      });
+    });
+
+    describe("批量操作功能", () => {
+      test("batch-move 工具 - 应该能批量移动文件", async () => {
+        const file1 = await createTestFile(tempTestDir, 'file1.txt', 'content1');
+        const file2 = await createTestFile(tempTestDir, 'file2.txt', 'content2');
+        const destDir = join(tempTestDir, 'destination');
+        
+        const result = await mcpHelper.callTool("batch-move", {
+          sources: [file1, file2],
+          destination: destDir,
+          overwrite: false,
+          createDirs: true
+        });
+        
+        expectToolCall.toSucceed(result);
+        expectToolCall.toContain(result, '批量移动完成');
+        expectToolCall.toContain(result, '成功移动 (2 个)');
+        
+        // 验证文件已移动
+        expect(await Bun.file(file1).exists()).toBe(false);
+        expect(await Bun.file(file2).exists()).toBe(false);
+        expect(await Bun.file(join(destDir, 'file1.txt')).text()).toBe('content1');
+        expect(await Bun.file(join(destDir, 'file2.txt')).text()).toBe('content2');
+      });
+
+      test("batch-copy 工具 - 应该能批量复制文件", async () => {
+        const file1 = await createTestFile(tempTestDir, 'file1.txt', 'content1');
+        const file2 = await createTestFile(tempTestDir, 'file2.txt', 'content2');
+        const destDir = join(tempTestDir, 'backup');
+        
+        const result = await mcpHelper.callTool("batch-copy", {
+          sources: [file1, file2],
+          destination: destDir,
+          overwrite: false,
+          createDirs: true
+        });
+        
+        expectToolCall.toSucceed(result);
+        expectToolCall.toContain(result, '批量复制完成');
+        expectToolCall.toContain(result, '成功复制 (2 个)');
+        
+        // 验证文件已复制
+        expect(await Bun.file(file1).text()).toBe('content1');
+        expect(await Bun.file(file2).text()).toBe('content2');
+        expect(await Bun.file(join(destDir, 'file1.txt')).text()).toBe('content1');
+        expect(await Bun.file(join(destDir, 'file2.txt')).text()).toBe('content2');
+      });
+
+      test("batch-delete 工具 - 应该能批量删除文件", async () => {
+        const file1 = await createTestFile(tempTestDir, 'file1.txt', 'content1');
+        const file2 = await createTestFile(tempTestDir, 'file2.txt', 'content2');
+        const { promises: fs } = require('fs');
+        const dir = join(tempTestDir, 'dir-to-delete');
+        await fs.mkdir(dir);
+        
+        const result = await mcpHelper.callTool("batch-delete", {
+          paths: [file1, file2, dir],
+          force: false
+        });
+        
+        expectToolCall.toSucceed(result);
+        expectToolCall.toContain(result, '批量删除完成');
+        expectToolCall.toContain(result, '成功删除 (3 个)');
+        
+        // 验证文件已删除
+        expect(await Bun.file(file1).exists()).toBe(false);
+        expect(await Bun.file(file2).exists()).toBe(false);
+        try {
+          await fs.stat(dir);
+          expect(true).toBe(false); // 不应该到达这里
+        } catch {
+          // 目录应该已被删除
+        }
+      });
+
+      test("批量操作 - 应该正确处理部分失败的情况", async () => {
+        const existingFile = await createTestFile(tempTestDir, 'existing.txt', 'content');
+        const nonExistentFile = join(tempTestDir, 'non-existent.txt');
+        const destDir = join(tempTestDir, 'destination');
+        
+        const result = await mcpHelper.callTool("batch-move", {
+          sources: [existingFile, nonExistentFile],
+          destination: destDir,
+          overwrite: false,
+          createDirs: true
+        });
+        
+        expectToolCall.toSucceed(result); // 部分成功不算完全失败
+        expectToolCall.toContain(result, '成功移动 (1 个)');
+        expectToolCall.toContain(result, '失败 (1 个)');
+        expectToolCall.toContain(result, '源文件不存在');
+      });
     });
   });
 });
