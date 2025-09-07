@@ -91,26 +91,6 @@ bun run dev
 bun run start
 ```
 
-## 在 MCP 客户端中使用
-
-### Claude Desktop 配置示例
-
-在 Claude Desktop 的配置文件中添加：
-
-```json
-{
-  "mcpServers": {
-    "filesystem": {
-      "command": "node",
-      "args": ["/absolute/path/to/mcp-toolkit/packages/fs-server/dist/index.js"]
-    }
-  }
-}
-```
-
-### 其他 MCP 客户端
-
-这些服务器遵循标准的 MCP 协议，可以与任何兼容的 MCP 客户端集成。每个服务器都使用 `stdio` 传输协议进行通信。
 
 ## 开发指南
 

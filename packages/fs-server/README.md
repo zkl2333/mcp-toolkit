@@ -7,15 +7,19 @@
 ### 支持的工具 (Tools)
 
 #### 基础文件操作
+
 1. **move-file** - 移动文件
+
    - 从源路径移动文件到目标路径
    - 支持覆盖模式和自动创建目录
 
 2. **copy-file** - 复制文件
+
    - 从源路径复制文件到目标路径
    - 支持覆盖模式和自动创建目录
 
 3. **delete-file** - 删除文件
+
    - 安全删除指定文件
    - 包含文件存在性检查
 
@@ -24,7 +28,9 @@
    - 支持覆盖模式和自动创建目录
 
 #### 目录操作
+
 5. **list-directory** - 列出目录内容
+
    - 列出指定目录中的文件和子目录
    - 支持显示隐藏文件和详细信息
 
@@ -33,17 +39,21 @@
    - 支持递归创建父目录
 
 #### 文件信息
+
 7. **file-info** - 获取文件信息
    - 获取文件或目录的详细信息
    - 包括大小、权限、时间戳等
 
 #### 链接操作
+
 8. **create-hard-link** - 创建硬链接
+
    - 为现有文件创建硬链接
    - 支持覆盖模式和自动创建目录
    - 硬链接不能链接到目录
 
 9. **create-symlink** - 创建软链接
+
    - 创建符号链接（软链接）
    - 支持链接到不存在的文件
    - 支持覆盖模式和自动创建目录
@@ -54,17 +64,21 @@
     - 验证链接的有效性
 
 #### 权限管理
+
 11. **change-permissions** - 修改文件权限
     - 修改文件或目录的权限
     - 支持八进制权限模式（如 '755', '644'）
 
 #### 批量操作
+
 12. **batch-move** - 批量移动文件
+
     - 批量移动多个文件或目录到目标目录
     - 支持覆盖模式和自动创建目录
     - 提供详细的成功/失败报告
 
 13. **batch-copy** - 批量复制文件
+
     - 批量复制多个文件或目录到目标目录
     - 支持覆盖模式和自动创建目录
     - 提供详细的成功/失败报告
@@ -102,23 +116,6 @@ bun run build
 node dist/index.js
 ```
 
-### 作为全局命令安装
-
-```bash
-# 从根目录安装所有工作区包
-bun install
-
-# 构建fs-server包
-cd packages/fs-server
-bun run build
-
-# 全局链接
-npm link
-
-# 现在可以在任何地方使用
-mcp-fs-server
-```
-
 ## MCP 客户端集成
 
 这个服务器使用标准的 MCP 协议，可以与任何兼容的 MCP 客户端集成。
@@ -131,8 +128,8 @@ mcp-fs-server
 {
   "mcpServers": {
     "filesystem": {
-      "command": "node",
-      "args": ["/path/to/mcp-toolkit/packages/fs-server/dist/index.js"]
+      "command": "npx",
+      "args": ["@zkl2333/fs-mcp-server"]
     }
   }
 }
@@ -145,6 +142,7 @@ mcp-fs-server
 #### 基础文件操作
 
 **移动文件：**
+
 ```json
 {
   "name": "move-file",
@@ -158,6 +156,7 @@ mcp-fs-server
 ```
 
 **重命名文件：**
+
 ```json
 {
   "name": "rename",
@@ -173,6 +172,7 @@ mcp-fs-server
 #### 目录操作
 
 **列出目录：**
+
 ```json
 {
   "name": "list-directory",
@@ -187,6 +187,7 @@ mcp-fs-server
 #### 文件信息
 
 **获取文件信息：**
+
 ```json
 {
   "name": "file-info",
@@ -199,6 +200,7 @@ mcp-fs-server
 #### 链接操作
 
 **创建硬链接：**
+
 ```json
 {
   "name": "create-hard-link",
@@ -212,6 +214,7 @@ mcp-fs-server
 ```
 
 **创建软链接：**
+
 ```json
 {
   "name": "create-symlink",
@@ -225,6 +228,7 @@ mcp-fs-server
 ```
 
 **读取软链接：**
+
 ```json
 {
   "name": "read-symlink",
@@ -237,6 +241,7 @@ mcp-fs-server
 #### 权限管理
 
 **修改文件权限：**
+
 ```json
 {
   "name": "change-permissions",
@@ -250,11 +255,16 @@ mcp-fs-server
 #### 批量操作
 
 **批量移动文件：**
+
 ```json
 {
   "name": "batch-move",
   "arguments": {
-    "sources": ["/path/to/file1.txt", "/path/to/file2.txt", "/path/to/file3.txt"],
+    "sources": [
+      "/path/to/file1.txt",
+      "/path/to/file2.txt",
+      "/path/to/file3.txt"
+    ],
     "destination": "/path/to/destination/",
     "overwrite": false,
     "createDirs": true
@@ -263,6 +273,7 @@ mcp-fs-server
 ```
 
 **批量复制文件：**
+
 ```json
 {
   "name": "batch-copy",
@@ -276,6 +287,7 @@ mcp-fs-server
 ```
 
 **批量删除文件：**
+
 ```json
 {
   "name": "batch-delete",
@@ -358,7 +370,7 @@ packages/fs-server/
 
 - `@modelcontextprotocol/sdk` - MCP TypeScript SDK
 - `zod` - 运行时类型验证
-- `typescript` - TypeScript支持
+- `typescript` - TypeScript 支持
 
 ## License
 

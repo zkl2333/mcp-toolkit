@@ -7,26 +7,31 @@
 ### 支持的工具 (Tools)
 
 1. **read-metadata** - 读取元数据
-   - 读取图片/视频文件的完整元数据（EXIF、IPTC、XMP等）
+
+   - 读取图片/视频文件的完整元数据（EXIF、IPTC、XMP 等）
    - 支持指定特定标签进行读取
    - 自动处理日期时间和时区信息
 
 2. **write-metadata** - 写入元数据
+
    - 添加或修改文件元数据
    - 支持各种元数据标准（EXIF、IPTC、XMP）
    - 批量更新多个标签
 
 3. **extract-thumbnail** - 提取缩略图
+
    - 从文件中提取嵌入的缩略图
    - 支持覆盖现有文件选项
    - 自动处理各种图片格式
 
 4. **extract-preview** - 提取预览图
+
    - 提取比缩略图更大的预览图
-   - 适用于RAW文件等专业格式
+   - 适用于 RAW 文件等专业格式
    - 保持原始图片质量
 
 5. **delete-metadata** - 删除元数据
+
    - 安全删除指定的元数据标签
    - 批量删除多个标签
    - 保留文件完整性
@@ -38,7 +43,7 @@
 ### 支持的文件格式
 
 - **图片格式**: JPEG, TIFF, PNG, GIF, BMP, WebP, HEIC, AVIF 等
-- **RAW格式**: CR2, NEF, ARW, DNG, ORF, RAF, PEF, RW2 等
+- **RAW 格式**: CR2, NEF, ARW, DNG, ORF, RAF, PEF, RW2 等
 - **视频格式**: MP4, MOV, AVI, MKV, WEBM 等
 - **其他格式**: PDF, PostScript, 多种音频格式等
 
@@ -78,23 +83,6 @@ bun run build
 node dist/index.js
 ```
 
-### 作为全局命令安装
-
-```bash
-# 从根目录安装所有工作区包
-bun install
-
-# 构建 exiftool-server 包
-cd packages/exiftool-server
-bun run build
-
-# 全局链接
-npm link
-
-# 现在可以在任何地方使用
-mcp-exiftool-server
-```
-
 ## MCP 客户端集成
 
 这个服务器使用标准的 MCP 协议，可以与任何兼容的 MCP 客户端集成。
@@ -107,8 +95,8 @@ mcp-exiftool-server
 {
   "mcpServers": {
     "exiftool": {
-      "command": "node",
-      "args": ["/path/to/mcp-toolkit/packages/exiftool-server/dist/index.js"]
+      "command": "npx",
+      "args": ["@zkl2333/exiftool-mcp-server"]
     }
   }
 }
@@ -119,6 +107,7 @@ mcp-exiftool-server
 服务器启动后，客户端可以调用以下工具：
 
 **读取元数据：**
+
 ```json
 {
   "name": "read-metadata",
@@ -130,6 +119,7 @@ mcp-exiftool-server
 ```
 
 **写入元数据：**
+
 ```json
 {
   "name": "write-metadata",
@@ -145,6 +135,7 @@ mcp-exiftool-server
 ```
 
 **提取缩略图：**
+
 ```json
 {
   "name": "extract-thumbnail",
@@ -157,6 +148,7 @@ mcp-exiftool-server
 ```
 
 **删除元数据：**
+
 ```json
 {
   "name": "delete-metadata",
@@ -170,43 +162,50 @@ mcp-exiftool-server
 ## 常用元数据标签
 
 ### 基本信息
+
 - `Make` - 相机制造商
 - `Model` - 相机型号
 - `LensModel` - 镜头型号
 - `Software` - 处理软件
 
 ### 拍摄参数
-- `ISO` - ISO感光度
+
+- `ISO` - ISO 感光度
 - `FNumber` - 光圈值
 - `ExposureTime` - 快门速度
 - `FocalLength` - 焦距
 
 ### 日期时间
+
 - `DateTimeOriginal` - 拍摄时间
 - `CreateDate` - 创建时间
 - `ModifyDate` - 修改时间
 - `AllDates` - 批量设置所有日期
 
-### GPS信息
+### GPS 信息
+
 - `GPSLatitude` - 纬度
 - `GPSLongitude` - 经度
 - `GPSAltitude` - 海拔
 
 ### 描述信息
+
 - `Title` - 标题
 - `Copyright` - 版权信息
 - `Keywords` - 关键词
 - `Description` - 描述
 
-### IPTC标签
-- `IPTC:Keywords` - IPTC关键词
-- `IPTC:CopyrightNotice` - IPTC版权声明
-- `IPTC:Caption-Abstract` - IPTC说明
+### IPTC 标签
 
-### XMP标签
-- `XMP:Title` - XMP标题
-- `XMP:Description` - XMP描述
-- `XMP:Creator` - XMP创作者
+- `IPTC:Keywords` - IPTC 关键词
+- `IPTC:CopyrightNotice` - IPTC 版权声明
+- `IPTC:Caption-Abstract` - IPTC 说明
+
+### XMP 标签
+
+- `XMP:Title` - XMP 标题
+- `XMP:Description` - XMP 描述
+- `XMP:Creator` - XMP 创作者
 
 ## 安全考虑
 
@@ -289,9 +288,9 @@ packages/exiftool-server/
 ### 依赖
 
 - `@modelcontextprotocol/sdk` - MCP TypeScript SDK
-- `exiftool-vendored` - ExifTool的Node.js封装
+- `exiftool-vendored` - ExifTool 的 Node.js 封装
 - `zod` - 运行时类型验证
-- `typescript` - TypeScript支持
+- `typescript` - TypeScript 支持
 
 ## 性能优化
 
@@ -305,10 +304,12 @@ packages/exiftool-server/
 ### 常见问题
 
 1. **ExifTool 未找到**
+
    - 确保系统安装了 Perl
    - 检查 `exiftool-vendored` 是否正确安装
 
 2. **权限问题**
+
    - 确保对文件有读写权限
    - 检查输出目录的写入权限
 
@@ -319,6 +320,7 @@ packages/exiftool-server/
 ### 调试模式
 
 启用调试日志：
+
 ```bash
 NODE_DEBUG=exiftool-vendored node dist/index.js
 ```
