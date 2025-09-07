@@ -6,7 +6,7 @@ import {
   createTestFile,
   createMcpTestHelper,
   expectToolCall
-} from '@mcp/test-utils';
+} from '@zkl2333/mcp-test-utils';
 
 // 导入 MCP 服务器（现在使用模拟的 SDK）
 import { server } from '../src/index.js';

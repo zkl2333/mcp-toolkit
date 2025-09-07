@@ -1,5 +1,5 @@
 {
-  "name": "@mcp/test-utils",
+  "name": "@zkl2333/mcp-test-utils",
   "version": "0.1.0",
   "description": "MCP 测试工具包：为 MCP 服务器提供通用测试功能",
   "main": "./dist/index.js",

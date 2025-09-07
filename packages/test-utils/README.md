@@ -1,11 +1,11 @@
-# @mcp/test-utils
+# @zkl2333/mcp-test-utils
 
 为 MCP 服务器测试提供通用工具：临时目录/文件工具、MCP SDK Mock、测试助手与断言。
 
 ## 安装
 
 ```bash
-bun add -D @mcp/test-utils
+bun add -D @zkl2333/mcp-test-utils
 ```
 
 或作为 workspace 依赖：
@@ -13,7 +13,7 @@ bun add -D @mcp/test-utils
 ```json
 {
   "devDependencies": {
-    "@mcp/test-utils": "workspace:*"
+    "@zkl2333/mcp-test-utils": "workspace:*"
   }
 }
 ```
@@ -29,14 +29,14 @@ bun add -D @mcp/test-utils
 在测试入口（或每个测试文件）中预置 SDK Mock：
 
 ```ts
-import { setupMcpMocks } from "@mcp/test-utils";
+import { setupMcpMocks } from "@zkl2333/mcp-test-utils";
 setupMcpMocks();
 ```
 
 创建服务器并测试工具：
 
 ```ts
-import { createMcpTestHelper, expectToolCall } from "@mcp/test-utils";
+import { createMcpTestHelper, expectToolCall } from "@zkl2333/mcp-test-utils";
 import { server } from "../src"; // 你的服务器
 
 const helper = createMcpTestHelper(server);

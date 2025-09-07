@@ -12,7 +12,7 @@ import {
   expectToolCall,
 } from "../src/index";
 
-describe("@mcp/test-utils", () => {
+describe("@zkl2333/mcp-test-utils", () => {
   let tmpDir: string;
 
   beforeAll(async () => {

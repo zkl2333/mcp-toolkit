@@ -1,5 +1,5 @@
 {
-  "name": "@mcp/exiftool-server",
+  "name": "@zkl2333/exiftool-mcp-server",
   "version": "0.1.0",
   "description": "MCP ExifTool服务器：提供图片/视频元数据读取和编辑工具",
   "main": "./dist/index.js",
@@ -42,7 +42,7 @@
   "devDependencies": {
     "@types/node": "^20.10.0",
     "@types/bun": "latest",
-    "@mcp/test-utils": "workspace:*",
+    "@zkl2333/mcp-test-utils": "workspace:*",
     "typescript": "^5.3.3"
   },
   "engines": {

@@ -14,7 +14,7 @@
     "outDir": "./dist",
     "baseUrl": ".",
     "paths": {
-      "@mcp/*": ["packages/*/src/index.ts"],
+      "@zkl2333/*": ["packages/*/src/index.ts"],
       "@/*": ["src/*"]
     },
     "resolveJsonModule": true,

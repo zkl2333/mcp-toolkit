@@ -1,5 +1,5 @@
 {
-  "name": "@mcp/fs-server",
+  "name": "@zkl2333/fs-mcp-server",
   "version": "0.1.0",
   "description": "MCP文件系统服务器：提供文件系统操作工具",
   "main": "./dist/index.js",
@@ -39,7 +39,7 @@
   "devDependencies": {
     "@types/node": "^20.10.0",
     "@types/bun": "latest",
-    "@mcp/test-utils": "workspace:*",
+    "@zkl2333/mcp-test-utils": "workspace:*",
     "typescript": "^5.3.3"
   },
   "engines": {

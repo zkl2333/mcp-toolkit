@@ -112,7 +112,7 @@ function getAffectedPackages(files, packageNames) {
         
         // 查找对应的包名
         for (const pkgName of packageNames) {
-          // 从包名中提取目录名 (例如: @mcp/fs-server -> fs-server)
+          // 从包名中提取目录名 (例如: @zkl2333/fs-mcp-server -> fs-server)
           const packageDirName = pkgName.split("/").pop();
           if (packageDirName === packageDir) {
             affectedPackages.add(pkgName);
