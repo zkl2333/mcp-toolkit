@@ -19,7 +19,6 @@
     "start": "node dist/index.js",
     "test": "bun run build && NODE_ENV=test bun test tests/*.spec.ts --timeout 30000; bun run fix-coverage",
     "test:watch": "NODE_ENV=test bun test tests/*.spec.ts --watch --timeout 30000",
-    "test:setup": "node tests/create-test-image.js",
     "fix-coverage": "node ../../scripts/fix-coverage-paths.js exiftool-server",
     "clean": "rm -rf dist",
     "lint": "echo '暂无linting配置'",
