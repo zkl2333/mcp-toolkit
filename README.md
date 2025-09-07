@@ -25,19 +25,19 @@ mcp-toolkit/
 
 ## 已包含的 MCP 服务器
 
-### 🗂️ @mcp/fs-server
+### 🗂️ @zkl2333/fs-mcp-server
 文件系统操作服务器 - [详细信息](./packages/fs-server/README.md)
 
 [![codecov](https://codecov.io/gh/zkl2333/mcp-toolkit/graph/badge.svg?flag=fs-server)](https://codecov.io/gh/zkl2333/mcp-toolkit)
 [![CI](https://github.com/zkl2333/mcp-toolkit/workflows/Test%20%26%20Coverage/badge.svg)](https://github.com/zkl2333/mcp-toolkit/actions)
 
-### 📸 @mcp/exiftool-server
+### 📸 @zkl2333/exiftool-mcp-server
 图片/视频元数据操作服务器 - [详细信息](./packages/exiftool-server/README.md)
 
 [![codecov](https://codecov.io/gh/zkl2333/mcp-toolkit/graph/badge.svg?flag=exiftool-server)](https://codecov.io/gh/zkl2333/mcp-toolkit)
 [![CI](https://github.com/zkl2333/mcp-toolkit/workflows/Test%20%26%20Coverage/badge.svg)](https://github.com/zkl2333/mcp-toolkit/actions)
 
-### 🧪 @mcp/test-utils
+### 🧪 @zkl2333/mcp-test-utils
 测试工具包 - [详细信息](./packages/test-utils/README.md)
 
 [![codecov](https://codecov.io/gh/zkl2333/mcp-toolkit/graph/badge.svg?flag=test-utils)](https://codecov.io/gh/zkl2333/mcp-toolkit)
