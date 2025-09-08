@@ -7,9 +7,26 @@
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { zodToJsonSchema } from "zod-to-json-schema";
 
 // 导入类型定义
-import { McpResponse } from './types/index.js';
+import { 
+  McpResponse,
+  MoveFileArgs,
+  CopyFileArgs,
+  DeleteFileArgs,
+  ListDirectoryArgs,
+  CreateDirectoryArgs,
+  FileInfoArgs,
+  CreateHardLinkArgs,
+  CreateSymlinkArgs,
+  ReadSymlinkArgs,
+  RenameArgs,
+  ChangePermissionsArgs,
+  BatchMoveArgs,
+  BatchCopyArgs,
+  BatchDeleteArgs
+} from './types/index.js';
 
 // 导入Schema配置
 import { ToolConfigs } from './schemas/tool-schemas.js';
@@ -83,13 +100,13 @@ function registerAllTools(): void {
     {
       title: ToolConfigs["move-file"].title,
       description: ToolConfigs["move-file"].description,
-      inputSchema: ToolConfigs["move-file"].inputSchema
+      inputSchema: zodToJsonSchema(ToolConfigs["move-file"].inputSchema) as any
     },
-    async ({ source, destination, overwrite, createDirs }) => {
+    async (args: MoveFileArgs): Promise<McpResponse> => {
       return handleAsyncOperation(async () => {
-        const result = await moveFile(source, destination, {
-          overwrite,
-          createDirs
+        const result = await moveFile(args.source, args.destination, {
+          overwrite: args.overwrite,
+          createDirs: args.createDirs
         });
         return result.message;
       });
@@ -102,13 +119,13 @@ function registerAllTools(): void {
     {
       title: ToolConfigs["copy-file"].title,
       description: ToolConfigs["copy-file"].description,
-      inputSchema: ToolConfigs["copy-file"].inputSchema
+      inputSchema: zodToJsonSchema(ToolConfigs["copy-file"].inputSchema) as any
     },
-    async ({ source, destination, overwrite, createDirs }) => {
+    async (args: CopyFileArgs): Promise<McpResponse> => {
       return handleAsyncOperation(async () => {
-        const result = await copyFile(source, destination, {
-          overwrite,
-          createDirs
+        const result = await copyFile(args.source, args.destination, {
+          overwrite: args.overwrite,
+          createDirs: args.createDirs
         });
         return result.message;
       });
@@ -121,12 +138,12 @@ function registerAllTools(): void {
     {
       title: ToolConfigs["delete-file"].title,
       description: ToolConfigs["delete-file"].description,
-      inputSchema: ToolConfigs["delete-file"].inputSchema
+      inputSchema: zodToJsonSchema(ToolConfigs["delete-file"].inputSchema) as any
     },
-    async ({ path, force }) => {
+    async (args: DeleteFileArgs): Promise<McpResponse> => {
       return handleAsyncOperation(async () => {
-        const result = await deleteFile(path, {
-          force
+        const result = await deleteFile(args.path, {
+          force: args.force
         });
         return result.message;
       });
@@ -139,11 +156,11 @@ function registerAllTools(): void {
     {
       title: ToolConfigs["list-directory"].title,
       description: ToolConfigs["list-directory"].description,
-      inputSchema: ToolConfigs["list-directory"].inputSchema
+      inputSchema: zodToJsonSchema(ToolConfigs["list-directory"].inputSchema) as any
     },
-    async ({ path, showHidden, details }) => {
+    async (args: ListDirectoryArgs): Promise<McpResponse> => {
       return handleAsyncOperation(async () => {
-        return await listDirectory(path, showHidden, details);
+        return await listDirectory(args.path, args.showHidden, args.details);
       });
     }
   );
@@ -154,11 +171,11 @@ function registerAllTools(): void {
     {
       title: ToolConfigs["create-directory"].title,
       description: ToolConfigs["create-directory"].description,
-      inputSchema: ToolConfigs["create-directory"].inputSchema
+      inputSchema: zodToJsonSchema(ToolConfigs["create-directory"].inputSchema) as any
     },
-    async ({ path, recursive }) => {
+    async (args: CreateDirectoryArgs): Promise<McpResponse> => {
       return handleAsyncOperation(async () => {
-        return await createDirectory(path, recursive);
+        return await createDirectory(args.path, args.recursive);
       });
     }
   );
@@ -169,11 +186,11 @@ function registerAllTools(): void {
     {
       title: ToolConfigs["file-info"].title,
       description: ToolConfigs["file-info"].description,
-      inputSchema: ToolConfigs["file-info"].inputSchema
+      inputSchema: zodToJsonSchema(ToolConfigs["file-info"].inputSchema) as any
     },
-    async ({ path }) => {
+    async (args: FileInfoArgs): Promise<McpResponse> => {
       return handleAsyncOperation(async () => {
-        return await getFileInfoDescription(path);
+        return await getFileInfoDescription(args.path);
       });
     }
   );
@@ -184,15 +201,15 @@ function registerAllTools(): void {
     {
       title: ToolConfigs["create-hard-link"].title,
       description: ToolConfigs["create-hard-link"].description,
-      inputSchema: ToolConfigs["create-hard-link"].inputSchema
+      inputSchema: zodToJsonSchema(ToolConfigs["create-hard-link"].inputSchema) as any
     },
-    async ({ source, destination, overwrite, createDirs }) => {
+    async (args: CreateHardLinkArgs): Promise<McpResponse> => {
       return handleAsyncOperation(async () => {
         return await createHardLink(
-          source, 
-          destination, 
-          overwrite, 
-          createDirs
+          args.source, 
+          args.destination, 
+          args.overwrite, 
+          args.createDirs
         );
       });
     }
@@ -204,15 +221,15 @@ function registerAllTools(): void {
     {
       title: ToolConfigs["create-symlink"].title,
       description: ToolConfigs["create-symlink"].description,
-      inputSchema: ToolConfigs["create-symlink"].inputSchema
+      inputSchema: zodToJsonSchema(ToolConfigs["create-symlink"].inputSchema) as any
     },
-    async ({ target, linkPath, overwrite, createDirs }) => {
+    async (args: CreateSymlinkArgs): Promise<McpResponse> => {
       return handleAsyncOperation(async () => {
         return await createSoftLink(
-          target, 
-          linkPath, 
-          overwrite, 
-          createDirs
+          args.target, 
+          args.linkPath, 
+          args.overwrite, 
+          args.createDirs
         );
       });
     }
@@ -224,11 +241,11 @@ function registerAllTools(): void {
     {
       title: ToolConfigs["read-symlink"].title,
       description: ToolConfigs["read-symlink"].description,
-      inputSchema: ToolConfigs["read-symlink"].inputSchema
+      inputSchema: zodToJsonSchema(ToolConfigs["read-symlink"].inputSchema) as any
     },
-    async ({ linkPath }) => {
+    async (args: ReadSymlinkArgs): Promise<McpResponse> => {
       return handleAsyncOperation(async () => {
-        return await readSoftLink(linkPath);
+        return await readSoftLink(args.linkPath);
       });
     }
   );
@@ -239,15 +256,15 @@ function registerAllTools(): void {
     {
       title: ToolConfigs["rename"].title,
       description: ToolConfigs["rename"].description,
-      inputSchema: ToolConfigs["rename"].inputSchema
+      inputSchema: zodToJsonSchema(ToolConfigs["rename"].inputSchema) as any
     },
-    async ({ oldPath, newPath, overwrite, createDirs }) => {
+    async (args: RenameArgs): Promise<McpResponse> => {
       return handleAsyncOperation(async () => {
         return await renameFileOrDirectory(
-          oldPath, 
-          newPath, 
-          overwrite, 
-          createDirs
+          args.oldPath, 
+          args.newPath, 
+          args.overwrite, 
+          args.createDirs
         );
       });
     }
@@ -259,11 +276,11 @@ function registerAllTools(): void {
     {
       title: ToolConfigs["change-permissions"].title,
       description: ToolConfigs["change-permissions"].description,
-      inputSchema: ToolConfigs["change-permissions"].inputSchema
+      inputSchema: zodToJsonSchema(ToolConfigs["change-permissions"].inputSchema) as any
     },
-    async ({ path, mode }) => {
+    async (args: ChangePermissionsArgs): Promise<McpResponse> => {
       return handleAsyncOperation(async () => {
-        return await changeFilePermissions(path, mode);
+        return await changeFilePermissions(args.path, args.mode);
       });
     }
   );
@@ -274,13 +291,13 @@ function registerAllTools(): void {
     {
       title: ToolConfigs["batch-move"].title,
       description: ToolConfigs["batch-move"].description,
-      inputSchema: ToolConfigs["batch-move"].inputSchema
+      inputSchema: zodToJsonSchema(ToolConfigs["batch-move"].inputSchema) as any
     },
-    async ({ sources, destination, overwrite, createDirs }) => {
+    async (args: BatchMoveArgs): Promise<McpResponse> => {
       return handleAsyncOperation(async () => {
-        const result = await batchMoveFiles(sources, destination, {
-          overwrite,
-          createDirs
+        const result = await batchMoveFiles(args.sources, args.destination, {
+          overwrite: args.overwrite,
+          createDirs: args.createDirs
         });
         return formatBatchOperationResult(result, "移动");
       });
@@ -293,13 +310,13 @@ function registerAllTools(): void {
     {
       title: ToolConfigs["batch-copy"].title,
       description: ToolConfigs["batch-copy"].description,
-      inputSchema: ToolConfigs["batch-copy"].inputSchema
+      inputSchema: zodToJsonSchema(ToolConfigs["batch-copy"].inputSchema) as any
     },
-    async ({ sources, destination, overwrite, createDirs }) => {
+    async (args: BatchCopyArgs): Promise<McpResponse> => {
       return handleAsyncOperation(async () => {
-        const result = await batchCopyFiles(sources, destination, {
-          overwrite,
-          createDirs
+        const result = await batchCopyFiles(args.sources, args.destination, {
+          overwrite: args.overwrite,
+          createDirs: args.createDirs
         });
         return formatBatchOperationResult(result, "复制");
       });
@@ -312,12 +329,12 @@ function registerAllTools(): void {
     {
       title: ToolConfigs["batch-delete"].title,
       description: ToolConfigs["batch-delete"].description,
-      inputSchema: ToolConfigs["batch-delete"].inputSchema
+      inputSchema: zodToJsonSchema(ToolConfigs["batch-delete"].inputSchema) as any
     },
-    async ({ paths, force }) => {
+    async (args: BatchDeleteArgs): Promise<McpResponse> => {
       return handleAsyncOperation(async () => {
-        const result = await batchDeleteFiles(paths, {
-          force
+        const result = await batchDeleteFiles(args.paths, {
+          force: args.force
         });
         return formatBatchOperationResult(result, "删除");
       });

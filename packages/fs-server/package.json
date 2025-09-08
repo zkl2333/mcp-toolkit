@@ -17,12 +17,8 @@
     "build:types": "tsc --declaration --emitDeclarationOnly --outDir dist",
     "dev": "bun run src/index.ts",
     "start": "node dist/index.js",
-    "test": "bun run build && NODE_ENV=test bun test tests/*.spec.ts --timeout 30000; bun run fix-coverage",
-    "test:watch": "NODE_ENV=test bun test tests/*.spec.ts --watch --timeout 30000",
-    "fix-coverage": "node ../../scripts/fix-coverage-paths.js fs-server",
-    "clean": "rm -rf dist",
-    "lint": "echo '暂无linting配置'",
-    "type-check": "tsc --noEmit"
+    "test": "bun test ./tests/unit/*.test.ts",
+    "clean": "rm -rf dist"
   },
   "keywords": [
     "mcp",
