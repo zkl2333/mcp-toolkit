@@ -16,7 +16,46 @@ import {
   FileSystemErrorType,
   OperationResult,
 } from "../types/index.js";
-import { validatePath, generateSecureTempFileName } from "./security.js";
+import { validatePath, generateSecureTempFileName, validateForceDeleteOperation } from "./security.js";
+
+/**
+ * 检查文件是否为敏感文件
+ */
+function isSensitiveFile(filePath: string): boolean {
+  const sensitivePatterns = [
+    // 系统文件
+    /(?:^|[\/\\])(?:System32|SysWOW64|Windows|Program Files|Applications)[\/\\]/i,
+    // 配置文件
+    /\.(?:ini|cfg|conf|config|json|xml|yaml|yml)$/i,
+    // 可执行文件
+    /\.(?:exe|dll|sys|bat|cmd|ps1|sh|bash)$/i,
+    // 数据库文件
+    /\.(?:db|sqlite|mdb|accdb)$/i,
+    // 密钥和证书文件
+    /\.(?:key|pem|crt|cert|p12|pfx)$/i,
+    // 系统关键目录
+    /(?:^|[\/\\])(?:etc|bin|sbin|usr\/bin|usr\/sbin)[\/\\]/i,
+  ];
+
+  return sensitivePatterns.some(pattern => pattern.test(filePath));
+}
+
+/**
+ * 检查文件是否为只读文件
+ */
+function isReadOnlyFile(stats: any): boolean {
+  // 检查文件权限，判断是否为只读
+  const mode = stats.mode;
+  const isWindows = platform() === "win32";
+  
+  if (isWindows) {
+    // Windows 系统检查只读属性
+    return (stats.mode & 0o200) === 0; // 写权限位为0
+  } else {
+    // Unix/Linux 系统检查用户写权限
+    return (mode & 0o200) === 0; // 用户写权限位为0
+  }
+}
 
 /**
  * 格式化文件大小显示
@@ -314,12 +353,36 @@ export async function deleteFile(
       );
     }
 
+    // 敏感文件保护检查
+    if (!force && isSensitiveFile(validatedPath)) {
+      throw new FileSystemError(
+        FileSystemErrorType.PERMISSION_DENIED,
+        `检测到敏感文件，删除操作被阻止。如需强制删除，请设置 force=true: ${validatedPath}\n` +
+        `⚠️  警告：强制删除敏感文件可能导致系统不稳定或数据丢失`
+      );
+    }
+
+    // 只读文件保护检查
+    if (!force && isReadOnlyFile(stats)) {
+      throw new FileSystemError(
+        FileSystemErrorType.PERMISSION_DENIED,
+        `检测到只读文件，删除操作被阻止。如需强制删除，请设置 force=true: ${validatedPath}\n` +
+        `⚠️  警告：删除只读文件可能包含重要数据`
+      );
+    }
+
+    // 如果是force模式，验证并记录警告日志
+    if (force) {
+      await validateForceDeleteOperation(undefined, [validatedPath]);
+      console.warn(`⚠️  强制删除文件: ${validatedPath}`);
+    }
+
     // 删除文件
     await fs.unlink(validatedPath);
 
     return {
       success: true,
-      message: `✅ 文件删除成功：${validatedPath}`,
+      message: `✅ 文件删除成功：${validatedPath}${force ? ' (强制模式)' : ''}`,
     };
   } catch (error) {
     if (error instanceof FileSystemError) {
@@ -511,6 +574,38 @@ export async function batchDeleteFiles(
   const results: string[] = [];
   const errors: string[] = [];
 
+  // 如果是force模式，验证是否允许强制删除
+  if (force) {
+    await validateForceDeleteOperation(undefined, paths);
+  }
+
+  // 如果是批量删除且包含敏感文件，需要更严格的检查
+  if (!force) {
+    const sensitiveFiles: string[] = [];
+    
+    // 预检查每个路径是否为敏感文件
+    for (const path of paths) {
+      try {
+        const validatedPath = await validatePath(path);
+        if (isSensitiveFile(validatedPath)) {
+          sensitiveFiles.push(path);
+        }
+      } catch {
+        // 如果路径验证失败，忽略该文件的敏感性检查
+        // 后续的具体处理会处理路径错误
+      }
+    }
+
+    if (sensitiveFiles.length > 0) {
+      throw new FileSystemError(
+        FileSystemErrorType.PERMISSION_DENIED,
+        `批量删除操作中检测到 ${sensitiveFiles.length} 个敏感文件，操作被阻止。\n` +
+        `敏感文件列表: ${sensitiveFiles.slice(0, 5).join(', ')}${sensitiveFiles.length > 5 ? '...' : ''}\n` +
+        `⚠️  如需强制删除，请设置 force=true 并谨慎操作`
+      );
+    }
+  }
+
   // 批量处理每个文件
   for (const filePath of paths) {
     try {
@@ -527,14 +622,31 @@ export async function batchDeleteFiles(
       // 获取文件信息
       const stats = await stat(validatedPath);
 
+      // 敏感文件保护检查（单个文件级别）
+      if (!force && isSensitiveFile(validatedPath)) {
+        errors.push(`敏感文件删除被阻止: ${validatedPath}`);
+        continue;
+      }
+
+      // 只读文件保护检查
+      if (!force && isReadOnlyFile(stats)) {
+        errors.push(`只读文件删除被阻止: ${validatedPath}`);
+        continue;
+      }
+
+      // 如果是force模式，记录警告日志
+      if (force && (isSensitiveFile(validatedPath) || isReadOnlyFile(stats))) {
+        console.warn(`⚠️  强制删除文件: ${validatedPath}`);
+      }
+
       if (stats.isDirectory()) {
         // 删除目录
         await fs.rmdir(validatedPath);
-        results.push(`目录已删除: ${validatedPath}`);
+        results.push(`目录已删除: ${validatedPath}${force ? ' (强制模式)' : ''}`);
       } else {
         // 删除文件
         await fs.unlink(validatedPath);
-        results.push(`文件已删除: ${validatedPath}`);
+        results.push(`文件已删除: ${validatedPath}${force ? ' (强制模式)' : ''}`);
       }
     } catch (error) {
       const errorMessage =

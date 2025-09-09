@@ -164,10 +164,9 @@ export async function createTestFiles(
  */
 export interface MockSecurityConfig {
   allowedDirectories: string[];
-  maxFileSize: number;
-  restrictedExtensions: string[];
-  enableSymlinkValidation: boolean;
   enablePathTraversalProtection: boolean;
+  allowForceDelete: boolean;
+  forceDeleteRequiresConfirmation: boolean;
 }
 
 /**
@@ -179,10 +178,9 @@ export function createTestSecurityConfig(
 ): MockSecurityConfig {
   return {
     allowedDirectories: [baseDir],
-    maxFileSize: 1024 * 1024, // 1MB
-    restrictedExtensions: [".exe", ".bat"],
-    enableSymlinkValidation: true,
     enablePathTraversalProtection: true,
+    allowForceDelete: true,
+    forceDeleteRequiresConfirmation: false,
     ...overrides,
   };
 }

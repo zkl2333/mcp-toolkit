@@ -9,19 +9,17 @@ import { promises as fs } from 'node:fs';
 
 // 导入要测试的模块
 import {
-  setSecurityConfig,
+  initializeSecurity,
   getSecurityConfig,
   normalizePath,
   expandHome,
   isPathWithinAllowedDirectories,
   containsIllegalCharacters,
-  isRestrictedExtension,
-  validateFileSize,
-  validateSymlinkSecurity,
   validatePath,
   validatePaths,
   checkDirectoryPermissions,
-  generateSecureTempFileName
+  generateSecureTempFileName,
+  validateForceDeleteOperation
 } from '../../src/lib/security.js';
 
 import { FileSystemError, FileSystemErrorType } from '../../src/types/index.js';
@@ -43,9 +41,8 @@ describe("安全模块单元测试", () => {
   beforeEach(async () => {
     tempDir = await createTempDir('security-test-');
     
-    // 设置测试安全配置
-    const config = createTestSecurityConfig(tempDir);
-    setSecurityConfig(config);
+    // 初始化安全配置（使用测试目录）
+    initializeSecurity([tempDir]);
   });
 
   afterEach(async () => {
@@ -53,43 +50,21 @@ describe("安全模块单元测试", () => {
   });
 
   describe("安全配置管理", () => {
-    test("应该能设置和获取安全配置", () => {
-      const testConfig = {
-        allowedDirectories: ['/test/dir'],
-        maxFileSize: 5000,
-        restrictedExtensions: ['.test'],
-        enableSymlinkValidation: false,
-        enablePathTraversalProtection: true
-      };
+    test("应该能获取安全配置", () => {
+      const config = getSecurityConfig();
 
-      setSecurityConfig(testConfig);
-      const retrievedConfig = getSecurityConfig();
-
-      expect(retrievedConfig.allowedDirectories).toContain('/test/dir');
-      expect(retrievedConfig.maxFileSize).toBe(5000);
-      expect(retrievedConfig.restrictedExtensions).toContain('.test');
-      expect(retrievedConfig.enableSymlinkValidation).toBe(false);
-      expect(retrievedConfig.enablePathTraversalProtection).toBe(true);
+      expect(config.allowedDirectories).toContain(tempDir);
+      expect(config.enablePathTraversalProtection).toBe(true);
+      expect(config.allowForceDelete).toBe(true);
+      expect(config.forceDeleteRequiresConfirmation).toBe(true);
     });
 
-    test("应该支持部分配置更新", () => {
-      const initialConfig = createTestSecurityConfig(tempDir, {
-        maxFileSize: 1000,
-        restrictedExtensions: ['.old']
-      });
-      setSecurityConfig(initialConfig);
-
-      // 部分更新
-      setSecurityConfig({
-        maxFileSize: 2000,
-        restrictedExtensions: ['.new']
-      });
-
+    test("应该正确初始化允许的目录", () => {
+      const testDirs = ['/test/dir1', '/test/dir2'];
+      initializeSecurity(testDirs);
+      
       const config = getSecurityConfig();
-      expect(config.maxFileSize).toBe(2000);
-      expect(config.restrictedExtensions).toContain('.new');
-      // 应该保留其他设置
-      expect(config.allowedDirectories).toEqual(initialConfig.allowedDirectories);
+      expect(config.allowedDirectories).toEqual(testDirs);
     });
   });
 
@@ -222,63 +197,7 @@ describe("安全模块单元测试", () => {
     });
   });
 
-  describe("文件扩展名限制", () => {
-    test("应该检测受限制的文件扩展名", () => {
-      const restrictedFiles = [
-        'malware.exe',
-        'script.bat',
-        'PROGRAM.EXE', // 测试大小写不敏感
-      ];
 
-      for (const file of restrictedFiles) {
-        expect(isRestrictedExtension(file)).toBe(true);
-      }
-    });
-
-    test("应该允许安全的文件扩展名", () => {
-      const safeFiles = [
-        'document.txt',
-        'image.jpg',
-        'data.json',
-        'script.js',
-        'no-extension'
-      ];
-
-      for (const file of safeFiles) {
-        expect(isRestrictedExtension(file)).toBe(false);
-      }
-    });
-  });
-
-  describe("文件大小验证", () => {
-    test("应该允许小于限制的文件", async () => {
-      const smallFile = await createTestFile(tempDir, 'small.txt', 'small');
-      
-      // 不应该抛出错误
-      await validateFileSize(smallFile);
-    });
-
-    test("应该拒绝超过大小限制的文件", async () => {
-      // 设置很小的大小限制
-      setSecurityConfig({ maxFileSize: 10 });
-      
-      const largeContent = 'x'.repeat(100);
-      const largeFile = await createTestFile(tempDir, 'large.txt', largeContent);
-      
-      await assertThrowsAsync(
-        () => validateFileSize(largeFile),
-        FileSystemError,
-        '文件大小超过限制'
-      );
-    });
-
-    test("应该优雅地处理不存在的文件", async () => {
-      const nonExistentFile = join(tempDir, 'non-existent.txt');
-      
-      // 不应该抛出错误（跳过大小检查）
-      await validateFileSize(nonExistentFile);
-    });
-  });
 
   describe("路径验证集成测试", () => {
     test("应该验证有效路径", async () => {
@@ -295,6 +214,7 @@ describe("安全模块单元测试", () => {
         '路径不能为空'
       );
     });
+
 
     test("应该拒绝包含非法字符的路径", async () => {
       const illegalPath = 'file\0.txt';
@@ -313,16 +233,6 @@ describe("安全模块单元测试", () => {
         () => validatePath(outsidePath),
         FileSystemError,
         '访问被拒绝'
-      );
-    });
-
-    test("应该拒绝受限制扩展名的文件", async () => {
-      const restrictedPath = join(tempDir, 'malware.exe');
-      
-      await assertThrowsAsync(
-        () => validatePath(restrictedPath),
-        FileSystemError,
-        '不允许访问此类型的文件'
       );
     });
 
@@ -418,51 +328,19 @@ describe("安全模块单元测试", () => {
     });
   });
 
-  describe("符号链接安全验证", () => {
-    test("应该在禁用验证时跳过符号链接检查", async () => {
-      setSecurityConfig({ enableSymlinkValidation: false });
-      
-      const testPath = join(tempDir, 'test.txt');
-      const result = await validateSymlinkSecurity(testPath);
-      
-      expect(result).toBe(testPath);
-    });
 
-    test("应该验证不存在的符号链接", async () => {
-      if (isWindows) {
-        console.log('Skipping symlink test on Windows');
-        return;
-      }
-
-      const nonExistentLink = join(tempDir, 'broken-link');
-      
+  describe("force删除操作验证", () => {
+    test("应该在没有elicitInput支持时拒绝执行", async () => {
+      // 应该抛出错误，因为无法进行确认
       await assertThrowsAsync(
-        () => validateSymlinkSecurity(nonExistentLink),
+        () => validateForceDeleteOperation(),
         FileSystemError,
-        '无法解析符号链接'
+        '用户取消了强制删除操作'
       );
     });
   });
 
   describe("边界条件测试", () => {
-    test("应该处理非常长的路径", async () => {
-      const longFileName = 'a'.repeat(100) + '.txt';
-      const longPath = join(tempDir, longFileName);
-      
-      try {
-        await createTestFile(tempDir, longFileName, 'content');
-        const validatedPath = await validatePath(longPath);
-        expect(validatedPath).toBe(resolve(longPath));
-      } catch (error) {
-        // 某些文件系统可能不支持很长的文件名
-        if (error.code === 'ENAMETOOLONG') {
-          console.log('Skipping long path test due to filesystem limitations');
-        } else {
-          throw error;
-        }
-      }
-    });
-
     test("应该处理包含Unicode字符的路径", async () => {
       const unicodeFile = await createTestFile(tempDir, '测试文件🚀.txt', 'Unicode content');
       

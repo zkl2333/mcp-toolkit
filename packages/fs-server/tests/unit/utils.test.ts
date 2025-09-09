@@ -28,7 +28,7 @@ import {
   FileSystemErrorType,
   BatchOperationResult,
 } from "../../src/types/index.js";
-import { setSecurityConfig } from "../../src/lib/security.js";
+import { initializeSecurity } from "../../src/lib/security.js";
 
 // 导入测试工具
 import {
@@ -50,9 +50,8 @@ describe("工具函数模块单元测试", () => {
   beforeEach(async () => {
     tempDir = await createTempDir("utils-test-");
 
-    // 设置测试安全配置
-    const config = createTestSecurityConfig(tempDir);
-    setSecurityConfig(config);
+    // 初始化安全配置（使用测试目录）
+    initializeSecurity([tempDir]);
   });
 
   afterEach(async () => {

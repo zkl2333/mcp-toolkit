@@ -13,7 +13,7 @@ import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { ToolConfigs } from "./schemas/tool-schemas.js";
 
 // 导入安全模块
-import { setSecurityConfig, validatePath } from "./lib/security.js";
+import { initializeSecurity, validatePath } from "./lib/security.js";
 
 // 导入文件操作模块
 import {
@@ -47,28 +47,29 @@ export const server = new McpServer({
   version: "0.2.0",
 });
 
+
 /**
- * 初始化安全配置
- * 可以通过环境变量或配置文件进行定制
+ * 解析命令行参数获取允许的目录
+ * 遵循MCP标准：npx server-filesystem /path1 /path2 /path3
  */
-function initializeSecurity(): void {
-  // 从环境变量获取允许的目录
-  const allowedDirs = process.env.FS_ALLOWED_DIRS
-    ? process.env.FS_ALLOWED_DIRS.split(";")
-    : [process.cwd()]; // 默认允许当前工作目录
-
-  const maxFileSize = process.env.FS_MAX_FILE_SIZE
-    ? parseInt(process.env.FS_MAX_FILE_SIZE, 10)
-    : 100 * 1024 * 1024; // 默认100MB
-
-  setSecurityConfig({
-    allowedDirectories: allowedDirs,
-    maxFileSize,
-    enableSymlinkValidation: true,
-    enablePathTraversalProtection: true,
+function parseAllowedDirectories(): string[] {
+  const args = process.argv.slice(2); // 跳过 node 和脚本路径
+  
+  if (args.length === 0) {
+    // 如果没有参数，使用当前工作目录
+    return [process.cwd()];
+  }
+  
+  // 验证所有传入的路径都是绝对路径
+  const allowedDirs = args.map(dir => {
+    if (!require('node:path').isAbsolute(dir)) {
+      console.error(`❌ 错误：路径必须是绝对路径: ${dir}`);
+      process.exit(1);
+    }
+    return dir;
   });
-
-  console.error(`🔒 安全配置已初始化，允许的目录: ${allowedDirs.join(", ")}`);
+  
+  return allowedDirs;
 }
 
 /**
@@ -341,8 +342,11 @@ function registerAllTools(): void {
  */
 async function main(): Promise<void> {
   try {
+    // 解析命令行参数获取允许的目录
+    const allowedDirectories = parseAllowedDirectories();
+    
     // 初始化安全配置
-    initializeSecurity();
+    initializeSecurity(allowedDirectories);
 
     // 注册所有工具
     registerAllTools();
@@ -353,8 +357,7 @@ async function main(): Promise<void> {
 
     console.error("🚀 MCP文件系统服务器已启动 (重构版本)");
     console.error("📝 版本: 0.2.0");
-    console.error("🔒 安全增强: 路径验证、符号链接保护、权限检查");
-    console.error("📦 模块化架构: 分层设计、可维护性提升");
+    console.error(`🔒 允许访问的目录: ${allowedDirectories.join(", ")}`);
   } catch (error) {
     console.error("❌ 服务器启动失败:", error);
     process.exit(1);

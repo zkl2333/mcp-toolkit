@@ -22,7 +22,7 @@ import {
 } from "../../src/lib/file-operations.js";
 
 import { FileSystemError, FileSystemErrorType } from "../../src/types/index.js";
-import { setSecurityConfig } from "../../src/lib/security.js";
+import { initializeSecurity } from "../../src/lib/security.js";
 
 // 导入测试工具
 import {
@@ -45,9 +45,8 @@ describe("文件操作模块单元测试", () => {
   beforeEach(async () => {
     tempDir = await createTempDir("file-ops-test-");
 
-    // 设置测试安全配置
-    const config = createTestSecurityConfig(tempDir);
-    setSecurityConfig(config);
+    // 初始化安全配置（使用测试目录）
+    initializeSecurity([tempDir]);
   });
 
   afterEach(async () => {

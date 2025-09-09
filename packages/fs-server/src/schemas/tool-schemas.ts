@@ -35,7 +35,12 @@ export const CopyFileArgsSchema = z.object({
 // 删除文件参数 Schema
 export const DeleteFileArgsSchema = z.object({
   path: PathSchema.describe("要删除的文件路径"),
-  force: OptionalBooleanSchema("强制删除，不进行确认", false)
+  force: OptionalBooleanSchema(
+    "⚠️ 强制删除模式：跳过敏感文件和只读文件保护。" +
+    "启用此选项可能删除重要的系统文件、配置文件或只读文件，" +
+    "请谨慎使用。默认为false以确保安全", 
+    false
+  )
 }).describe("删除文件工具参数");
 
 // 列出目录参数 Schema
@@ -118,7 +123,12 @@ export const BatchDeleteArgsSchema = z.object({
   paths: z.array(PathSchema)
     .min(1, "至少需要一个文件路径")
     .describe("要删除的文件路径数组"),
-  force: OptionalBooleanSchema("强制删除，不进行确认", false)
+  force: OptionalBooleanSchema(
+    "⚠️ 强制删除模式：跳过所有安全检查，包括敏感文件检测和只读文件保护。" +
+    "批量删除时启用此选项风险极高，可能造成不可逆的系统损坏。" +
+    "建议先在小范围测试。默认为false", 
+    false
+  )
 }).describe("批量删除文件工具参数");
 
 // 工具配置类型，包含Schema和描述信息
@@ -152,10 +162,14 @@ export const ToolConfigs: Record<string, ToolConfig> = {
   },
   "delete-file": {
     title: "删除文件",
-    description: "安全删除指定文件，包含存在性检查",
+    description: "安全删除指定文件，包含敏感文件检测、只读保护和存在性检查。force模式将跳过安全保护，请谨慎使用",
     inputSchema: {
       path: z.string().describe("要删除的文件路径"),
-      force: z.boolean().optional().describe("强制删除，不进行确认").default(false)
+      force: z.boolean().optional().describe(
+        "⚠️ 强制删除模式：跳过敏感文件和只读文件保护。" +
+        "启用此选项可能删除重要的系统文件、配置文件或只读文件，" +
+        "请谨慎使用。默认为false以确保安全"
+      ).default(false)
     }
   },
   "list-directory": {
@@ -251,10 +265,14 @@ export const ToolConfigs: Record<string, ToolConfig> = {
   },
   "batch-delete": {
     title: "批量删除文件",
-    description: "批量删除多个文件或目录，支持强制删除模式，提供详细的成功/失败报告",
+    description: "批量删除多个文件或目录，包含敏感文件预检查和安全保护。force模式风险极高，可能造成系统损坏",
     inputSchema: {
       paths: z.array(z.string()).min(1, "至少需要一个文件路径").describe("要删除的文件路径数组"),
-      force: z.boolean().optional().describe("强制删除，不进行确认").default(false)
+      force: z.boolean().optional().describe(
+        "⚠️ 强制删除模式：跳过所有安全检查，包括敏感文件检测和只读文件保护。" +
+        "批量删除时启用此选项风险极高，可能造成不可逆的系统损坏。" +
+        "建议先在小范围测试。默认为false"
+      ).default(false)
     }
   }
 };

@@ -35,10 +35,9 @@ export interface FileInfo {
 // 安全配置类型
 export interface SecurityConfig {
   allowedDirectories: string[];
-  maxFileSize: number;
-  restrictedExtensions: string[];
-  enableSymlinkValidation: boolean;
   enablePathTraversalProtection: boolean;
+  allowForceDelete: boolean; // 是否允许force删除操作
+  forceDeleteRequiresConfirmation: boolean; // force删除是否需要额外确认
 }
 
 // 文件操作选项类型
