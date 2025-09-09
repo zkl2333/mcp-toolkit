@@ -7,28 +7,26 @@
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-
-// 导入类型定义
-import { McpResponse } from './types/index.js';
+import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 
 // 导入Schema配置
-import { ToolConfigs } from './schemas/tool-schemas.js';
+import { ToolConfigs } from "./schemas/tool-schemas.js";
 
 // 导入安全模块
-import { setSecurityConfig, validatePath } from './lib/security.js';
+import { setSecurityConfig, validatePath } from "./lib/security.js";
 
 // 导入文件操作模块
-import { 
-  moveFile, 
-  copyFile, 
-  deleteFile, 
-  batchMoveFiles, 
-  batchCopyFiles, 
-  batchDeleteFiles 
-} from './lib/file-operations.js';
+import {
+  moveFile,
+  copyFile,
+  deleteFile,
+  batchMoveFiles,
+  batchCopyFiles,
+  batchDeleteFiles,
+} from "./lib/file-operations.js";
 
 // 导入工具函数模块
-import { 
+import {
   handleAsyncOperation,
   listDirectory,
   createDirectory,
@@ -38,15 +36,15 @@ import {
   readSoftLink,
   renameFileOrDirectory,
   changeFilePermissions,
-  formatBatchOperationResult
-} from './lib/utils.js';
+  formatBatchOperationResult,
+} from "./lib/utils.js";
 
 /**
  * 创建 MCP 服务器实例
  */
 export const server = new McpServer({
   name: "filesystem-server",
-  version: "0.2.0"
+  version: "0.2.0",
 });
 
 /**
@@ -55,22 +53,22 @@ export const server = new McpServer({
  */
 function initializeSecurity(): void {
   // 从环境变量获取允许的目录
-  const allowedDirs = process.env.FS_ALLOWED_DIRS 
-    ? process.env.FS_ALLOWED_DIRS.split(';')
+  const allowedDirs = process.env.FS_ALLOWED_DIRS
+    ? process.env.FS_ALLOWED_DIRS.split(";")
     : [process.cwd()]; // 默认允许当前工作目录
-    
-  const maxFileSize = process.env.FS_MAX_FILE_SIZE 
-    ? parseInt(process.env.FS_MAX_FILE_SIZE, 10) 
+
+  const maxFileSize = process.env.FS_MAX_FILE_SIZE
+    ? parseInt(process.env.FS_MAX_FILE_SIZE, 10)
     : 100 * 1024 * 1024; // 默认100MB
-    
+
   setSecurityConfig({
     allowedDirectories: allowedDirs,
     maxFileSize,
     enableSymlinkValidation: true,
-    enablePathTraversalProtection: true
+    enablePathTraversalProtection: true,
   });
-  
-  console.error(`🔒 安全配置已初始化，允许的目录: ${allowedDirs.join(', ')}`);
+
+  console.error(`🔒 安全配置已初始化，允许的目录: ${allowedDirs.join(", ")}`);
 }
 
 /**
@@ -83,13 +81,16 @@ function registerAllTools(): void {
     {
       title: ToolConfigs["move-file"].title,
       description: ToolConfigs["move-file"].description,
-      inputSchema: ToolConfigs["move-file"].inputSchema
+      inputSchema: ToolConfigs["move-file"].inputSchema,
     },
-    async ({ source, destination, overwrite, createDirs }) => {
+    async (
+      { source, destination, overwrite, createDirs },
+      extra
+    ): Promise<CallToolResult> => {
       return handleAsyncOperation(async () => {
         const result = await moveFile(source, destination, {
           overwrite,
-          createDirs
+          createDirs,
         });
         return result.message;
       });
@@ -102,13 +103,16 @@ function registerAllTools(): void {
     {
       title: ToolConfigs["copy-file"].title,
       description: ToolConfigs["copy-file"].description,
-      inputSchema: ToolConfigs["copy-file"].inputSchema
+      inputSchema: ToolConfigs["copy-file"].inputSchema,
     },
-    async ({ source, destination, overwrite, createDirs }) => {
+    async (
+      { source, destination, overwrite, createDirs },
+      extra
+    ): Promise<CallToolResult> => {
       return handleAsyncOperation(async () => {
         const result = await copyFile(source, destination, {
           overwrite,
-          createDirs
+          createDirs,
         });
         return result.message;
       });
@@ -121,12 +125,12 @@ function registerAllTools(): void {
     {
       title: ToolConfigs["delete-file"].title,
       description: ToolConfigs["delete-file"].description,
-      inputSchema: ToolConfigs["delete-file"].inputSchema
+      inputSchema: ToolConfigs["delete-file"].inputSchema,
     },
-    async ({ path, force }) => {
+    async ({ path, force }, extra): Promise<CallToolResult> => {
       return handleAsyncOperation(async () => {
         const result = await deleteFile(path, {
-          force
+          force,
         });
         return result.message;
       });
@@ -139,9 +143,9 @@ function registerAllTools(): void {
     {
       title: ToolConfigs["list-directory"].title,
       description: ToolConfigs["list-directory"].description,
-      inputSchema: ToolConfigs["list-directory"].inputSchema
+      inputSchema: ToolConfigs["list-directory"].inputSchema,
     },
-    async ({ path, showHidden, details }) => {
+    async ({ path, showHidden, details }, extra): Promise<CallToolResult> => {
       return handleAsyncOperation(async () => {
         return await listDirectory(path, showHidden, details);
       });
@@ -154,9 +158,9 @@ function registerAllTools(): void {
     {
       title: ToolConfigs["create-directory"].title,
       description: ToolConfigs["create-directory"].description,
-      inputSchema: ToolConfigs["create-directory"].inputSchema
+      inputSchema: ToolConfigs["create-directory"].inputSchema,
     },
-    async ({ path, recursive }) => {
+    async ({ path, recursive }, extra): Promise<CallToolResult> => {
       return handleAsyncOperation(async () => {
         return await createDirectory(path, recursive);
       });
@@ -169,9 +173,9 @@ function registerAllTools(): void {
     {
       title: ToolConfigs["file-info"].title,
       description: ToolConfigs["file-info"].description,
-      inputSchema: ToolConfigs["file-info"].inputSchema
+      inputSchema: ToolConfigs["file-info"].inputSchema,
     },
-    async ({ path }) => {
+    async ({ path }, extra): Promise<CallToolResult> => {
       return handleAsyncOperation(async () => {
         return await getFileInfoDescription(path);
       });
@@ -184,16 +188,14 @@ function registerAllTools(): void {
     {
       title: ToolConfigs["create-hard-link"].title,
       description: ToolConfigs["create-hard-link"].description,
-      inputSchema: ToolConfigs["create-hard-link"].inputSchema
+      inputSchema: ToolConfigs["create-hard-link"].inputSchema,
     },
-    async ({ source, destination, overwrite, createDirs }) => {
+    async (
+      { source, destination, overwrite, createDirs },
+      extra
+    ): Promise<CallToolResult> => {
       return handleAsyncOperation(async () => {
-        return await createHardLink(
-          source, 
-          destination, 
-          overwrite, 
-          createDirs
-        );
+        return await createHardLink(source, destination, overwrite, createDirs);
       });
     }
   );
@@ -204,16 +206,14 @@ function registerAllTools(): void {
     {
       title: ToolConfigs["create-symlink"].title,
       description: ToolConfigs["create-symlink"].description,
-      inputSchema: ToolConfigs["create-symlink"].inputSchema
+      inputSchema: ToolConfigs["create-symlink"].inputSchema,
     },
-    async ({ target, linkPath, overwrite, createDirs }) => {
+    async (
+      { target, linkPath, overwrite, createDirs },
+      extra
+    ): Promise<CallToolResult> => {
       return handleAsyncOperation(async () => {
-        return await createSoftLink(
-          target, 
-          linkPath, 
-          overwrite, 
-          createDirs
-        );
+        return await createSoftLink(target, linkPath, overwrite, createDirs);
       });
     }
   );
@@ -224,9 +224,9 @@ function registerAllTools(): void {
     {
       title: ToolConfigs["read-symlink"].title,
       description: ToolConfigs["read-symlink"].description,
-      inputSchema: ToolConfigs["read-symlink"].inputSchema
+      inputSchema: ToolConfigs["read-symlink"].inputSchema,
     },
-    async ({ linkPath }) => {
+    async ({ linkPath }, extra): Promise<CallToolResult> => {
       return handleAsyncOperation(async () => {
         return await readSoftLink(linkPath);
       });
@@ -239,14 +239,17 @@ function registerAllTools(): void {
     {
       title: ToolConfigs["rename"].title,
       description: ToolConfigs["rename"].description,
-      inputSchema: ToolConfigs["rename"].inputSchema
+      inputSchema: ToolConfigs["rename"].inputSchema,
     },
-    async ({ oldPath, newPath, overwrite, createDirs }) => {
+    async (
+      { oldPath, newPath, overwrite, createDirs },
+      extra
+    ): Promise<CallToolResult> => {
       return handleAsyncOperation(async () => {
         return await renameFileOrDirectory(
-          oldPath, 
-          newPath, 
-          overwrite, 
+          oldPath,
+          newPath,
+          overwrite,
           createDirs
         );
       });
@@ -259,9 +262,9 @@ function registerAllTools(): void {
     {
       title: ToolConfigs["change-permissions"].title,
       description: ToolConfigs["change-permissions"].description,
-      inputSchema: ToolConfigs["change-permissions"].inputSchema
+      inputSchema: ToolConfigs["change-permissions"].inputSchema,
     },
-    async ({ path, mode }) => {
+    async ({ path, mode }, extra): Promise<CallToolResult> => {
       return handleAsyncOperation(async () => {
         return await changeFilePermissions(path, mode);
       });
@@ -274,13 +277,16 @@ function registerAllTools(): void {
     {
       title: ToolConfigs["batch-move"].title,
       description: ToolConfigs["batch-move"].description,
-      inputSchema: ToolConfigs["batch-move"].inputSchema
+      inputSchema: ToolConfigs["batch-move"].inputSchema,
     },
-    async ({ sources, destination, overwrite, createDirs }) => {
+    async (
+      { sources, destination, overwrite, createDirs },
+      extra
+    ): Promise<CallToolResult> => {
       return handleAsyncOperation(async () => {
         const result = await batchMoveFiles(sources, destination, {
           overwrite,
-          createDirs
+          createDirs,
         });
         return formatBatchOperationResult(result, "移动");
       });
@@ -293,13 +299,16 @@ function registerAllTools(): void {
     {
       title: ToolConfigs["batch-copy"].title,
       description: ToolConfigs["batch-copy"].description,
-      inputSchema: ToolConfigs["batch-copy"].inputSchema
+      inputSchema: ToolConfigs["batch-copy"].inputSchema,
     },
-    async ({ sources, destination, overwrite, createDirs }) => {
+    async (
+      { sources, destination, overwrite, createDirs },
+      extra
+    ): Promise<CallToolResult> => {
       return handleAsyncOperation(async () => {
         const result = await batchCopyFiles(sources, destination, {
           overwrite,
-          createDirs
+          createDirs,
         });
         return formatBatchOperationResult(result, "复制");
       });
@@ -312,12 +321,12 @@ function registerAllTools(): void {
     {
       title: ToolConfigs["batch-delete"].title,
       description: ToolConfigs["batch-delete"].description,
-      inputSchema: ToolConfigs["batch-delete"].inputSchema
+      inputSchema: ToolConfigs["batch-delete"].inputSchema,
     },
-    async ({ paths, force }) => {
+    async ({ paths, force }, extra): Promise<CallToolResult> => {
       return handleAsyncOperation(async () => {
         const result = await batchDeleteFiles(paths, {
-          force
+          force,
         });
         return formatBatchOperationResult(result, "删除");
       });
@@ -334,14 +343,14 @@ async function main(): Promise<void> {
   try {
     // 初始化安全配置
     initializeSecurity();
-    
+
     // 注册所有工具
     registerAllTools();
-    
+
     // 连接传输层
     const transport = new StdioServerTransport();
     await server.connect(transport);
-    
+
     console.error("🚀 MCP文件系统服务器已启动 (重构版本)");
     console.error("📝 版本: 0.2.0");
     console.error("🔒 安全增强: 路径验证、符号链接保护、权限检查");
@@ -355,12 +364,12 @@ async function main(): Promise<void> {
 /**
  * 优雅关闭处理
  */
-process.on('SIGINT', () => {
+process.on("SIGINT", () => {
   console.error("\n🔄 正在关闭MCP文件系统服务器...");
   process.exit(0);
 });
 
-process.on('SIGTERM', () => {
+process.on("SIGTERM", () => {
   console.error("\n🔄 正在关闭MCP文件系统服务器...");
   process.exit(0);
 });

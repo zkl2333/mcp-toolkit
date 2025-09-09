@@ -2,17 +2,6 @@
  * 文件系统服务器类型定义
  */
 
-import { z } from "zod";
-
-// MCP 响应类型
-export interface McpResponse {
-  content: Array<{
-    type: string;
-    text: string;
-  }>;
-  isError?: boolean;
-}
-
 // 文件操作结果类型
 export interface OperationResult {
   success: boolean;
@@ -62,15 +51,15 @@ export interface FileOperationOptions {
 
 // 错误类型枚举
 export enum FileSystemErrorType {
-  PATH_NOT_ALLOWED = 'PATH_NOT_ALLOWED',
-  FILE_NOT_FOUND = 'FILE_NOT_FOUND', 
-  FILE_ALREADY_EXISTS = 'FILE_ALREADY_EXISTS',
-  PERMISSION_DENIED = 'PERMISSION_DENIED',
-  SYMLINK_TARGET_INVALID = 'SYMLINK_TARGET_INVALID',
-  DIRECTORY_NOT_EMPTY = 'DIRECTORY_NOT_EMPTY',
-  INVALID_OPERATION = 'INVALID_OPERATION',
-  OPERATION_FAILED = 'OPERATION_FAILED',
-  VALIDATION_ERROR = 'VALIDATION_ERROR'
+  PATH_NOT_ALLOWED = "PATH_NOT_ALLOWED",
+  FILE_NOT_FOUND = "FILE_NOT_FOUND",
+  FILE_ALREADY_EXISTS = "FILE_ALREADY_EXISTS",
+  PERMISSION_DENIED = "PERMISSION_DENIED",
+  SYMLINK_TARGET_INVALID = "SYMLINK_TARGET_INVALID",
+  DIRECTORY_NOT_EMPTY = "DIRECTORY_NOT_EMPTY",
+  INVALID_OPERATION = "INVALID_OPERATION",
+  OPERATION_FAILED = "OPERATION_FAILED",
+  VALIDATION_ERROR = "VALIDATION_ERROR",
 }
 
 // 自定义错误类
@@ -81,7 +70,7 @@ export class FileSystemError extends Error {
     public details?: Record<string, any>
   ) {
     super(message);
-    this.name = 'FileSystemError';
+    this.name = "FileSystemError";
   }
 }
 
